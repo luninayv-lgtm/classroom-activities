@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>spin() — be/do practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0d1117;
+    --panel: #161b22;
+    --panel-2: #1c2330;
+    --border: #2a3240;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --green: #3fb950;
+    --blue: #58a6ff;
+    --orange: #f0883e;
+    --purple: #bc8cff;
+    --red: #f85149;
+    --yellow: #d29922;
+    --cyan: #39c5cf;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0; padding:0; height:100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    overflow-x:hidden;
+  }
+
+  .wrap{
+    min-height:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding: 28px 16px 40px;
+  }
+
+  /* header bar, styled like an editor tab strip */
+  .titlebar{
+    width:100%;
+    max-width: 920px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding: 10px 16px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px 10px 0 0;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .dot{ width:11px; height:11px; border-radius:50%; }
+  .dot.r{ background: var(--red); }
+  .dot.y{ background: var(--yellow); }
+  .dot.g{ background: var(--green); }
+  .filename{ margin-left: 8px; }
+  .filename b{ color: var(--text); font-weight:600; }
+
+  .stage{
+    width:100%;
+    max-width: 920px;
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--border);
+    border-top:none;
+    border-radius: 0 0 12px 12px;
+    padding: 36px 24px 30px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap: 26px;
+  }
+
+  h1{
+    font-family:'JetBrains Mono', monospace;
+    font-size: clamp(20px, 3.4vw, 28px);
+    font-weight: 800;
+    margin: 0;
+    text-align:center;
+    letter-spacing: -0.02em;
+  }
+  h1 .fn{ color: var(--blue); }
+  h1 .paren{ color: var(--muted); }
+  h1 .kw{ color: var(--purple); }
+  .sub{
+    margin: -14px 0 4px;
+    color: var(--muted);
+    font-size: 14px;
+    text-align:center;
+    max-width: 560px;
+    line-height:1.5;
+  }
+  .sub code{
+    font-family:'JetBrains Mono', monospace;
+    background: rgba(88,166,255,0.12);
+    color: var(--blue);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+
+  /* WHEEL */
+  .wheel-area{
+    position: relative;
+    width: min(360px, 78vw);
+    height: min(360px, 78vw);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .pointer{
+    position:absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    width: 30px;
+    height: 34px;
+    filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5));
+  }
+
+  .hub-ring{
+    position:absolute;
+    inset:0;
+    border-radius:50%;
+    background: conic-gradient(from 0deg, var(--blue), var(--purple), var(--cyan), var(--green), var(--blue));
+    padding: 6px;
+    filter: drop-shadow(0 8px 24px rgba(0,0,0,0.45));
+  }
+  .hub-ring-inner{
+    width:100%; height:100%;
+    border-radius:50%;
+    background: var(--bg);
+  }
+
+  #wheel{
+    position:absolute;
+    inset: 6px;
+    border-radius: 50%;
+    transition: transform 4.2s cubic-bezier(0.14, 0.8, 0.14, 1);
+    will-change: transform;
+    box-shadow: inset 0 0 0 2px rgba(0,0,0,0.4);
+  }
+
+  .center-btn{
+    position:absolute;
+    width: 78px;
+    height: 78px;
+    border-radius: 50%;
+    background: var(--panel);
+    border: 2px solid var(--border);
+    color: var(--green);
+    font-family:'JetBrains Mono', monospace;
+    font-weight: 800;
+    font-size: 14px;
+    cursor:pointer;
+    z-index: 4;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color .15s ease;
+    letter-spacing: 0.02em;
+  }
+  .center-btn:hover{
+    transform: translate(-50%,-50%) scale(1.06);
+    border-color: var(--green);
+    box-shadow: 0 8px 26px rgba(63,185,80,0.35);
+  }
+  .center-btn:active{ transform: translate(-50%,-50%) scale(0.97); }
+  .center-btn.spinning{
+    opacity: 0.6;
+    cursor: default;
+    pointer-events: none;
+  }
+  .center-btn-wrap{
+    position:absolute;
+    top:50%; left:50%;
+    transform: translate(-50%,-50%);
+    z-index:4;
+  }
+
+  /* TERMINAL OUTPUT */
+  .terminal{
+    width: 100%;
+    max-width: 640px;
+    background: #010409;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow:hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  }
+  .term-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding: 9px 14px;
+    background: #0a0f16;
+    border-bottom: 1px solid var(--border);
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .term-body{
+    padding: 20px 18px 22px;
+    min-height: 92px;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 15px;
+    line-height:1.7;
+  }
+  .term-line{ color: var(--muted); }
+  .term-tag{
+    color: var(--green);
+  }
+  .q-id{
+    color: var(--yellow);
+    font-weight:700;
+    margin-right: 6px;
+  }
+  .q-text{
+    color: var(--text);
+    font-size: 17px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    display:inline;
+  }
+  .q-text .blank{
+    display:inline-block;
+    min-width: 46px;
+    border-bottom: 2px solid var(--orange);
+    color: var(--orange);
+    text-align:center;
+    font-weight:700;
+    font-family:'JetBrains Mono', monospace;
+  }
+  .cursor{
+    display:inline-block;
+    width: 9px;
+    height: 18px;
+    background: var(--green);
+    margin-left: 2px;
+    vertical-align: -3px;
+    animation: blink 1s steps(1) infinite;
+  }
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  .progress{
+    width:100%;
+    max-width: 640px;
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .progress-track{
+    flex:1;
+    height: 6px;
+    border-radius: 4px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    width:0%;
+    background: linear-gradient(90deg, var(--green), var(--cyan));
+    transition: width 0.4s ease;
+  }
+  .reset-btn{
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor:pointer;
+    transition: all .15s ease;
+    white-space:nowrap;
+  }
+  .reset-btn:hover{
+    color: var(--red);
+    border-color: var(--red);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    #wheel{ transition: transform 0.6s linear; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="titlebar">
+    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span class="filename">practice / <b>be_do_questions.wheel</b></span>
+  </div>
+
+  <div class="stage">
+    <h1><span class="kw">function</span> <span class="fn">spinWheel</span><span class="paren">()</span></h1>
+    <p class="sub">Click the wheel. It'll land on one question card — read it aloud and fill the blank with <code>do / does</code> or <code>am / is / are</code>.</p>
+
+    <div class="wheel-area">
+      <svg class="pointer" viewBox="0 0 30 34" fill="none">
+        <path d="M15 34L1 8C1 3.6 6.4 0 15 0C23.6 0 29 3.6 29 8L15 34Z" fill="#f0883e" stroke="#0d1117" stroke-width="2"/>
+      </svg>
+      <div class="hub-ring"><div class="hub-ring-inner"></div></div>
+      <svg id="wheel" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="center-btn-wrap">
+        <button class="center-btn" id="spinBtn">SPIN</button>
+      </div>
+    </div>
+
+    <div class="progress">
+      <span id="progressLabel">0 / 17 asked</span>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <button class="reset-btn" id="resetBtn">↺ reset</button>
+    </div>
+
+    <div class="terminal">
+      <div class="term-head">
+        <span>●</span><span>terminal — question output</span>
+      </div>
+      <div class="term-body" id="termBody">
+        <div class="term-line"><span class="term-tag">$</span> waiting for spin<span class="cursor"></span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const questions = [
+  "What databases ___ you work with?",
+  "___ you on the same team as frontend developers?",
+  "___ you use Git every day?",
+  "Why ___ you like backend development?",
+  "___ you in the office now?",
+  "___ you often fix bugs?",
+  "What programming languages ___ you use?",
+  "___ you work with Python?",
+  "___ you a backend developer?",
+  "___ you test your code?",
+  "What tools ___ you use for testing?",
+  "___ you write APIs?",
+  "___ you ready for the release?",
+  "___ you know SQL?",
+  "How ___ you learn new technologies?",
+  "___ you usually work from home?",
+  "___ you work with databases?"
+];
+
+const colors = ["#58a6ff","#3fb950","#f0883e","#bc8cff","#39c5cf","#f85149","#d29922"];
+
+const wheel = document.getElementById('wheel');
+const n = questions.length;
+const cx = 150, cy = 150, r = 150;
+
+function polar(cx, cy, r, angleDeg){
+  const a = (angleDeg - 90) * Math.PI / 180;
+  return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+}
+
+const segAngle = 360 / n;
+let svgMarkup = "";
+for (let i = 0; i < n; i++){
+  const startAngle = i * segAngle;
+  const endAngle = startAngle + segAngle;
+  const [x1, y1] = polar(cx, cy, r, startAngle);
+  const [x2, y2] = polar(cx, cy, r, endAngle);
+  const largeArc = segAngle > 180 ? 1 : 0;
+  const color = colors[i % colors.length];
+  const path = `M ${cx} ${cy} L ${x1.toFixed(2)} ${y1.toFixed(2)} A ${r} ${r} 0 ${largeArc} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`;
+  svgMarkup += `<path d="${path}" fill="${color}" stroke="#0d1117" stroke-width="1.5"/>`;
+
+  const labelAngle = startAngle + segAngle / 2;
+  const [lx, ly] = polar(cx, cy, r * 0.68, labelAngle);
+  svgMarkup += `<text x="${lx.toFixed(2)}" y="${ly.toFixed(2)}" fill="#0d1117" font-family="JetBrains Mono, monospace" font-weight="800" font-size="15" text-anchor="middle" dominant-baseline="middle" transform="rotate(${labelAngle}, ${lx.toFixed(2)}, ${ly.toFixed(2)})">Q${i+1}</text>`;
+}
+wheel.innerHTML = svgMarkup;
+
+const spinBtn = document.getElementById('spinBtn');
+const resetBtn = document.getElementById('resetBtn');
+const termBody = document.getElementById('termBody');
+const progressLabel = document.getElementById('progressLabel');
+const progressFill = document.getElementById('progressFill');
+
+let currentRotation = 0;
+let spinning = false;
+let asked = new Set();
+
+function updateProgress(){
+  progressLabel.textContent = `${asked.size} / ${n} asked`;
+  progressFill.style.width = `${(asked.size / n) * 100}%`;
+}
+
+function formatQuestion(q){
+  return q.replace("___", '<span class="blank">___</span>');
+}
+
+function showQuestion(index){
+  asked.add(index);
+  updateProgress();
+  termBody.innerHTML = `
+    <div class="term-line"><span class="term-tag">$</span> ./wheel --result</div>
+    <div style="margin-top:10px;"><span class="q-id">Q${index+1}</span><span class="q-text">${formatQuestion(questions[index])}</span></div>
+  `;
+}
+
+spinBtn.addEventListener('click', () => {
+  if (spinning) return;
+  spinning = true;
+  spinBtn.classList.add('spinning');
+  spinBtn.textContent = "···";
+
+  const targetIndex = Math.floor(Math.random() * n);
+  // angle so that the middle of targetIndex segment lands under the top pointer (0deg)
+  const targetMiddle = targetIndex * segAngle + segAngle / 2;
+  const fullSpins = 5 + Math.floor(Math.random() * 3); // 5-7 full turns
+  // we want final rotation such that (targetMiddle + rotation) mod 360 == 0 (pointer at top)
+  const neededOffset = (360 - targetMiddle) % 360;
+  const finalRotation = currentRotation - (currentRotation % 360) + fullSpins * 360 + neededOffset;
+
+  currentRotation = finalRotation;
+  wheel.style.transform = `rotate(${currentRotation}deg)`;
+
+  termBody.innerHTML = `<div class="term-line"><span class="term-tag">$</span> spinning<span class="cursor"></span></div>`;
+
+  setTimeout(() => {
+    spinning = false;
+    spinBtn.classList.remove('spinning');
+    spinBtn.textContent = "SPIN";
+    showQuestion(targetIndex);
+  }, 4300);
+});
+
+resetBtn.addEventListener('click', () => {
+  asked.clear();
+  updateProgress();
+  termBody.innerHTML = `<div class="term-line"><span class="term-tag">$</span> waiting for spin<span class="cursor"></span></div>`;
+});
+
+updateProgress();
+</script>
+</body>
+</html>
