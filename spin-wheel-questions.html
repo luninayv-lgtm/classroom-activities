@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Spin the Wheel</title>
+<style>
+  :root{
+    --ink:#1c1b29;
+    --paper:#fbf7ee;
+    --wheel-a:#ffb703;
+    --wheel-b:#fb8500;
+    --wheel-c:#8ecae6;
+    --wheel-d:#219ebc;
+    --wheel-e:#ff6b6b;
+    --wheel-f:#6a4c93;
+    --accent:#e63946;
+    --line:#1c1b29;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;
+    height:100%;
+    background:var(--paper);
+    font-family:"Trebuchet MS", "Segoe UI", sans-serif;
+    color:var(--ink);
+    overflow-x:hidden;
+  }
+  body{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:28px 16px 40px;
+  }
+  h1{
+    font-size:clamp(22px,4vw,32px);
+    letter-spacing:0.5px;
+    margin:0 0 4px;
+    text-align:center;
+  }
+  .sub{
+    margin:0 0 22px;
+    font-size:14px;
+    color:#555;
+    text-align:center;
+  }
+  .stage{
+    position:relative;
+    width:min(420px,86vw);
+    aspect-ratio:1/1;
+    margin-bottom:26px;
+  }
+  .pointer{
+    position:absolute;
+    top:-14px;
+    left:50%;
+    transform:translateX(-50%);
+    width:0;
+    height:0;
+    border-left:16px solid transparent;
+    border-right:16px solid transparent;
+    border-top:28px solid var(--accent);
+    z-index:5;
+    filter:drop-shadow(0 2px 2px rgba(0,0,0,.25));
+  }
+  .wheel-wrap{
+    width:100%;
+    height:100%;
+    border-radius:50%;
+    border:6px solid var(--ink);
+    box-shadow:0 10px 24px rgba(0,0,0,.18);
+    background:var(--paper);
+  }
+  #wheel{
+    width:100%;
+    height:100%;
+    display:block;
+    transition:transform 4.5s cubic-bezier(.15,.85,.25,1);
+  }
+  .hub{
+    position:absolute;
+    top:50%;
+    left:50%;
+    width:54px;
+    height:54px;
+    background:var(--paper);
+    border:5px solid var(--ink);
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+    z-index:4;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:20px;
+  }
+  button{
+    font-family:inherit;
+    cursor:pointer;
+    border:none;
+  }
+  #spinBtn{
+    background:var(--accent);
+    color:#fff;
+    font-size:17px;
+    font-weight:700;
+    letter-spacing:0.5px;
+    padding:14px 34px;
+    border-radius:999px;
+    box-shadow:0 4px 0 #a3222b;
+    transition:transform .08s ease, box-shadow .08s ease;
+  }
+  #spinBtn:active{
+    transform:translateY(3px);
+    box-shadow:0 1px 0 #a3222b;
+  }
+  #spinBtn:disabled{
+    background:#c9c4b8;
+    box-shadow:0 4px 0 #a49f92;
+    cursor:not-allowed;
+  }
+  .progress{
+    margin-top:14px;
+    font-size:13px;
+    color:#555;
+  }
+  #resetBtn{
+    margin-top:10px;
+    background:none;
+    color:#8a5a00;
+    text-decoration:underline;
+    font-size:13px;
+    padding:4px;
+  }
+
+  /* Modal */
+  .overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(28,27,41,.55);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:20;
+    padding:20px;
+  }
+  .overlay.show{display:flex;}
+  .card{
+    background:var(--paper);
+    border:4px solid var(--ink);
+    border-radius:18px;
+    max-width:460px;
+    width:100%;
+    padding:30px 26px 26px;
+    text-align:center;
+    box-shadow:0 14px 0 rgba(0,0,0,.12);
+    animation:pop .35s cubic-bezier(.2,1.4,.4,1);
+  }
+  @keyframes pop{
+    from{transform:scale(.7);opacity:0;}
+    to{transform:scale(1);opacity:1;}
+  }
+  .card .eyebrow{
+    font-size:12px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--accent);
+    font-weight:700;
+    margin-bottom:10px;
+  }
+  .card p.question{
+    font-size:20px;
+    line-height:1.4;
+    font-weight:600;
+    margin:0 0 22px;
+  }
+  .card button{
+    background:var(--ink);
+    color:var(--paper);
+    padding:10px 26px;
+    border-radius:999px;
+    font-size:15px;
+    font-weight:700;
+  }
+  .done-card p.question{
+    font-size:17px;
+    font-weight:500;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    #wheel{transition:none;}
+    .card{animation:none;}
+  }
+</style>
+</head>
+<body>
+
+<h1>Spin for a Question</h1>
+<p class="sub">Tap spin — each question comes up once</p>
+
+<div class="stage">
+  <div class="pointer"></div>
+  <div class="wheel-wrap">
+    <svg id="wheel" viewBox="0 0 400 400"></svg>
+  </div>
+  <div class="hub">🎯</div>
+</div>
+
+<button id="spinBtn">SPIN THE WHEEL</button>
+<div class="progress" id="progress"></div>
+<button id="resetBtn">Reset all questions</button>
+
+<div class="overlay" id="overlay">
+  <div class="card" id="card">
+    <div class="eyebrow" id="eyebrow">Your Question</div>
+    <p class="question" id="questionText"></p>
+    <button id="closeBtn">Got it</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   EDIT YOUR QUESTIONS HERE
+   Replace these placeholder strings with the real questions.
+   Order doesn't matter — the wheel slices are generated from
+   however many entries are in this array.
+   ============================================================ */
+const QUESTIONS = [
+  "If you (can) choose to have any job, which one you (do)?",
+  "If you (have) a superpower, what it (be)?",
+  "Which dangerous animal you (pet) if you (can)?",
+  "Where you (travel) now if you (can)?",
+  "If you (can) choose a talent, what it (be)?",
+  "If you (have) a lot of money, what you (buy)?",
+  "What you (change) about your character if you (have) a chance?",
+  "What movie you (star) in if you (be) an actor/actress?"
+];
+
+const colors = ["#ffb703","#fb8500","#8ecae6","#219ebc","#ff6b6b","#6a4c93","#06d6a0","#ef476f"];
+
+let remaining = [...QUESTIONS.keys()]; // indices not yet used
+let currentRotation = 0;
+let spinning = false;
+
+const svg = document.getElementById('wheel');
+const spinBtn = document.getElementById('spinBtn');
+const resetBtn = document.getElementById('resetBtn');
+const overlay = document.getElementById('overlay');
+const questionText = document.getElementById('questionText');
+const eyebrow = document.getElementById('eyebrow');
+const card = document.getElementById('card');
+const closeBtn = document.getElementById('closeBtn');
+const progress = document.getElementById('progress');
+
+const CX = 200, CY = 200, R = 196;
+
+function polar(cx, cy, r, angleDeg){
+  const a = (angleDeg - 90) * Math.PI / 180;
+  return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+}
+
+function buildWheel(){
+  svg.innerHTML = "";
+  const n = QUESTIONS.length;
+  const slice = 360 / n;
+
+  for(let i=0;i<n;i++){
+    const startAngle = i * slice;
+    const endAngle = startAngle + slice;
+    const [x1,y1] = polar(CX,CY,R,startAngle);
+    const [x2,y2] = polar(CX,CY,R,endAngle);
+    const largeArc = slice > 180 ? 1 : 0;
+    const path = document.createElementNS("http://www.w3.org/2000/svg","path");
+    const d = `M ${CX} ${CY} L ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+    path.setAttribute("d", d);
+    path.setAttribute("fill", colors[i % colors.length]);
+    path.setAttribute("stroke", "#1c1b29");
+    path.setAttribute("stroke-width", "2");
+    path.setAttribute("data-index", i);
+    svg.appendChild(path);
+
+    // number label
+    const midAngle = startAngle + slice/2;
+    const [lx,ly] = polar(CX,CY,R*0.68,midAngle);
+    const text = document.createElementNS("http://www.w3.org/2000/svg","text");
+    text.setAttribute("x", lx);
+    text.setAttribute("y", ly);
+    text.setAttribute("text-anchor","middle");
+    text.setAttribute("dominant-baseline","middle");
+    text.setAttribute("font-size","20");
+    text.setAttribute("font-weight","700");
+    text.setAttribute("fill","#1c1b29");
+    text.setAttribute("transform", `rotate(${midAngle}, ${lx}, ${ly})`);
+    text.textContent = i+1;
+    svg.appendChild(text);
+  }
+  updateSliceStates();
+}
+
+function updateSliceStates(){
+  const n = QUESTIONS.length;
+  for(let i=0;i<n;i++){
+    const path = svg.querySelector(`path[data-index="${i}"]`);
+    if(!remaining.includes(i)){
+      path.setAttribute("opacity","0.18");
+    } else {
+      path.setAttribute("opacity","1");
+    }
+  }
+  progress.textContent = remaining.length > 0
+    ? `${QUESTIONS.length - remaining.length} of ${QUESTIONS.length} questions used`
+    : `All ${QUESTIONS.length} questions used — reset to spin again`;
+  spinBtn.disabled = remaining.length === 0;
+  spinBtn.textContent = remaining.length === 0 ? "ALL DONE" : "SPIN THE WHEEL";
+}
+
+function spin(){
+  if(spinning || remaining.length === 0) return;
+  spinning = true;
+  spinBtn.disabled = true;
+
+  const n = QUESTIONS.length;
+  const slice = 360 / n;
+
+  // pick a random remaining question
+  const pickPos = Math.floor(Math.random() * remaining.length);
+  const chosenIndex = remaining[pickPos];
+
+  // angle so that chosen slice center lands under the pointer (top, 0deg)
+  const sliceCenter = chosenIndex * slice + slice/2;
+  const randomOffset = (Math.random() - 0.5) * slice * 0.6; // land somewhere within slice, not dead center every time
+  const targetAngleWithinCircle = 360 - sliceCenter - randomOffset; // rotation needed to bring slice to top
+
+  const fullSpins = 5 + Math.floor(Math.random()*3); // 5-7 full rotations
+  const newRotation = currentRotation - (currentRotation % 360) + fullSpins*360 + targetAngleWithinCircle;
+
+  currentRotation = newRotation;
+  svg.style.transform = `rotate(${currentRotation}deg)`;
+
+  setTimeout(() => {
+    spinning = false;
+    remaining = remaining.filter(i => i !== chosenIndex);
+    updateSliceStates();
+    showQuestion(chosenIndex);
+  }, 4500);
+}
+
+function showQuestion(index){
+  eyebrow.textContent = remaining.length >= 0 ? `Question ${index+1}` : "Question";
+  questionText.textContent = QUESTIONS[index];
+  card.classList.remove('done-card');
+  overlay.classList.add('show');
+}
+
+function showAllDone(){
+  eyebrow.textContent = "All done";
+  questionText.textContent = "Every question has been used. Tap reset to start a new round.";
+  card.classList.add('done-card');
+  overlay.classList.add('show');
+}
+
+closeBtn.addEventListener('click', () => {
+  overlay.classList.remove('show');
+});
+
+spinBtn.addEventListener('click', spin);
+
+resetBtn.addEventListener('click', () => {
+  remaining = [...QUESTIONS.keys()];
+  updateSliceStates();
+});
+
+buildWheel();
+</script>
+</body>
+</html>
