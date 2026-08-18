@@ -564,68 +564,60 @@
    full accepted answer, which is compared to what the
    student types (case-insensitive, spacing-normalised).
    ========================================================= */
+```javascript
 const QUESTIONS = [
   {
-    question: "When I arrived at the office, my colleague ___ already ___ the report. (finish)",
-    answers: ["had", ["finished", "completed"]],
-    target: "Past Perfect",
-    explanation: "We use the Past Perfect (had + past participle) for an action completed before another past action."
+    question: "When I ___ (open) my laptop yesterday morning, I ___ (realise) that I ___ (forget) to push my changes to GitHub the night before.",
+    answers: [["opened"], ["realised", "realized"], ["had forgotten"]],
+    explanation: "Past Simple is used for the sequence of completed past actions (opened, realised). Past Perfect is used for the action that happened before them (had forgotten)."
   },
   {
-    question: "She ___ (live) in Berlin for over a decade — she moved there in 2014.",
-    answers: [["has lived", "'s lived"]],
-    target: "Present Perfect",
-    explanation: "Present Perfect describes an action that started in the past and continues into the present."
+    question: "While I ___ (work) on a new component, my colleague ___ (send) me a message saying that the API ___ (stop) working.",
+    answers: [["was working"], ["sent"], ["had stopped"]],
+    explanation: "Past Continuous describes an action in progress when another action happened (was working). Past Simple describes the interrupting event (sent), while Past Perfect shows that the API had stopped before the message was sent."
   },
   {
-    question: "If I ___ (know) about the meeting earlier, I would have prepared some notes.",
-    answers: [["had known", "'d known"]],
-    target: "Third Conditional",
-    explanation: "The third conditional uses had + past participle in the if-clause to talk about an unreal past."
+    question: "By the time the designer ___ (join) the call, I ___ already ___ (finish) the first version of the landing page.",
+    answers: [["joined"], ["had", "had"], ["finished"]],
+    explanation: "Past Simple is used for the later past action (joined). Past Perfect is used for the action completed before that point (had finished)."
   },
   {
-    question: "The bridge ___ (build) in 1932 and is still in use today.",
-    answers: [["was built"]],
-    target: "Passive Voice",
-    explanation: "Past Simple passive: was/were + past participle, used when the focus is on the action, not who did it."
+    question: "I ___ (install) a new shelf for my plants when I ___ (notice) that I ___ (measure) the wall incorrectly.",
+    answers: [["was installing"], ["noticed"], ["had measured"]],
+    explanation: "Past Continuous describes the action in progress (was installing). Past Simple describes the event that happened during it (noticed). Past Perfect shows that the incorrect measurement happened before I noticed the problem (had measured)."
   },
   {
-    question: "By the time you arrive, we ___ (finish) dinner.",
-    answers: [["will have finished", "'ll have finished"]],
-    target: "Future Perfect",
-    explanation: "Future Perfect describes an action that will be completed before a specific point in the future."
+    question: "When we ___ (arrive) at the apartment, the builders ___ already ___ (leave), but they ___ (not / clean) up after themselves.",
+    answers: [["arrived"], ["had", "had"], ["left"], ["didn't clean", "did not clean"]],
+    explanation: "Past Simple describes our arrival (arrived) and the fact that the builders did not clean up. Past Perfect shows that the builders had left before we arrived."
   },
   {
-    question: "I wish I ___ (study) harder for the exam last week.",
-    answers: [["had studied"]],
-    target: "Wish + Past Perfect",
-    explanation: "Wish + past perfect expresses regret about something in the past."
+    question: "Last weekend, I ___ (spend) most of Saturday finishing the bathroom. By Sunday morning, I ___ (paint) all the walls.",
+    answers: [["spent"], ["had painted"]],
+    explanation: "Past Simple describes a completed action in a finished past time period (spent). Past Perfect shows that the walls were already painted by a particular point in the past (had painted)."
   },
   {
-    question: "He suggested that she ___ (arrive) earlier next time.",
-    answers: [["arrive"]],
-    target: "Subjunctive",
-    explanation: "After 'suggest that', English uses the base form of the verb (the subjunctive), without -s or -ed."
+    question: "While I ___ (try) to fix a bug in the checkout process, I suddenly ___ (remember) that I ___ (change) the same piece of code the previous day.",
+    answers: [["was trying"], ["remembered"], ["had changed"]],
+    explanation: "Past Continuous describes the action in progress (was trying). Past Simple describes the event that happened during it (remembered). Past Perfect shows that the code change happened before that moment (had changed)."
   },
   {
-    question: "This report ___ (proofread) before it is sent to the client.",
-    answers: [["needs to be proofread", "must be proofread", "should be proofread"]],
-    target: "Passive Infinitive",
-    explanation: "A passive infinitive (need/must/should + be + past participle) expresses necessity done to something."
+    question: "I ___ (not / understand) why the website ___ (load) so slowly until I ___ (discover) that someone ___ (add) a huge image to the homepage.",
+    answers: [["didn't understand", "did not understand"], ["was loading"], ["discovered"], ["had added"]],
+    explanation: "Past Simple describes the state of not understanding and the moment of discovery. Past Continuous describes the website's ongoing slow loading, while Past Perfect shows that the huge image had been added before I discovered the reason."
   },
   {
-    question: "Not only ___ the flight delayed, but our luggage was also lost. (be)",
-    answers: [["was"]],
-    target: "Inversion",
-    explanation: "After a negative adverbial like 'Not only', the auxiliary verb moves before the subject."
+    question: "While the electrician ___ (work) in the apartment, I ___ (sit) in the kitchen and ___ (write) some code. I ___ (already / finish) the most difficult part of the task.",
+    answers: [["was working"], ["was sitting"], ["was writing"], ["had already finished"]],
+    explanation: "Past Continuous is used for actions that were in progress at the same time (was working, was sitting, was writing). Past Perfect shows that the most difficult part had been completed before that moment (had already finished)."
   },
   {
-    question: "By next year, she ___ (work) at the company for two decades.",
-    answers: [["will have been working", "'ll have been working"]],
-    target: "Future Perfect Continuous",
-    explanation: "Future Perfect Continuous stresses the duration of an action up to a point in the future."
+    question: "By the time I ___ (finish) renovating the living room, I ___ (buy) so many plants that there was almost no space left for anything else.",
+    answers: [["finished"], ["had bought"]],
+    explanation: "Past Simple describes the later completed action (finished). Past Perfect shows that the plant purchases had accumulated before the renovation was finished (had bought)."
   }
 ];
+```
 
 const CORRECT_MESSAGES = ["Nice!", "Correct!", "Great job!", "Look! It's growing!", "Your Ficus is happy!"];
 const WATER_FAIL_MESSAGES = [
