@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grow Your Ficus — Grammar Revision</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F1ECDC;
+    --ink:#26231C;
+    --ink-soft:#6E6656;
+    --panel-forest:#1E3A2B;
+    --panel-forest-light:#274A36;
+    --clay:#B5623C;
+    --clay-dark:#8C4A2C;
+    --leaf-1:#3F7A4C;
+    --leaf-2:#548F58;
+    --leaf-3:#78AC66;
+    --gold:#D9A441;
+    --rose:#C1614F;
+    --card:#FBF8F0;
+    --card-border:#E3DCC8;
+    --radius:18px;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Work Sans', sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    align-items:stretch;
+    justify-content:center;
+    padding:20px;
+  }
+  h1,h2,h3{font-family:'Fraunces', serif; margin:0;}
+
+  .app{
+    width:100%;
+    max-width:980px;
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:24px;
+    box-shadow:0 30px 60px -30px rgba(30,58,43,0.35);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .topbar{
+    padding:22px 28px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .topbar .title{
+    font-size:1.5rem;
+    font-weight:600;
+    color:var(--panel-forest);
+    letter-spacing:0.2px;
+  }
+  .topbar .subtitle{
+    font-size:0.85rem;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+
+  .progress-wrap{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:200px;
+  }
+  .progress-label{
+    font-size:0.8rem;
+    color:var(--ink-soft);
+    white-space:nowrap;
+    font-weight:500;
+  }
+  .progress-track{
+    flex:1;
+    height:8px;
+    background:#E7E0CC;
+    border-radius:99px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background:linear-gradient(90deg, var(--leaf-2), var(--gold));
+    width:0%;
+    border-radius:99px;
+    transition:width 0.5s ease;
+  }
+
+  .main{
+    display:flex;
+    gap:0;
+  }
+  @media (max-width:760px){
+    .main{flex-direction:column;}
+  }
+
+  /* ---------- SCENE ---------- */
+  .scene-panel{
+    flex:1.05;
+    background:radial-gradient(120% 140% at 30% 0%, var(--panel-forest-light) 0%, var(--panel-forest) 65%);
+    position:relative;
+    min-height:380px;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    padding:20px 10px 0;
+    overflow:hidden;
+  }
+  .scene-panel::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(255,255,255,0.05), transparent 40%),
+      radial-gradient(circle at 85% 10%, rgba(255,255,255,0.04), transparent 35%);
+    pointer-events:none;
+  }
+
+  .score-chip{
+    position:absolute;
+    top:14px;
+    left:14px;
+    background:rgba(251,248,240,0.14);
+    color:#F1ECDC;
+    font-size:0.78rem;
+    font-weight:500;
+    padding:6px 12px;
+    border-radius:99px;
+    letter-spacing:0.3px;
+    backdrop-filter:blur(3px);
+  }
+
+  .stage-svg{
+    width:100%;
+    max-width:420px;
+    height:auto;
+    display:block;
+  }
+
+  .ground{fill:#16281D;}
+
+  .pot-body{fill:var(--clay);}
+  .pot-rim{fill:var(--clay-dark);}
+  .pot-shadow{fill:rgba(0,0,0,0.18);}
+
+  .stem{
+    fill:var(--leaf-1);
+    transition:y 0.7s cubic-bezier(.34,1.4,.4,1), height 0.7s cubic-bezier(.34,1.4,.4,1);
+  }
+
+  .leaf{
+    transform-box:fill-box;
+    transform-origin:50% 100%;
+    transform:scale(0);
+    opacity:0;
+    transition:transform 0.6s cubic-bezier(.34,1.56,.4,1), opacity 0.5s ease;
+  }
+  .leaf.visible{
+    transform:scale(1);
+    opacity:1;
+    animation:sway 5s ease-in-out infinite;
+  }
+  .leaf .leaf-vein{
+    stroke:rgba(0,0,0,0.18);
+    stroke-width:1;
+    fill:none;
+  }
+  @keyframes sway{
+    0%,100%{ rotate: -1.5deg; }
+    50%{ rotate: 1.5deg; }
+  }
+  .leaf.falling{
+    animation:leafFall 0.9s ease-in forwards !important;
+  }
+  @keyframes leafFall{
+    0%{ transform:scale(1) translate(0,0) rotate(0deg); opacity:1; }
+    100%{ transform:scale(0.7) translate(6px,120px) rotate(200deg); opacity:0; }
+  }
+
+  .reset-flash{
+    opacity:0;
+    fill:#FBF8F0;
+  }
+  .reset-flash.play{
+    animation:flash 0.6s ease-out;
+  }
+  @keyframes flash{
+    0%{opacity:0;}
+    30%{opacity:0.35;}
+    100%{opacity:0;}
+  }
+
+  /* character */
+  .man{ }
+  .man-arm-right{
+    transform-box:fill-box;
+    transform-origin:20% 20%;
+    transition:transform 0.4s ease;
+  }
+  .man.watering .man-arm-right,
+  .man.fertilizing .man-arm-right{
+    transform:rotate(-38deg);
+  }
+  .tool-water, .tool-fert{
+    opacity:0;
+    transition:opacity 0.3s ease;
+  }
+  .man.watering .tool-water{opacity:1;}
+  .man.fertilizing .tool-fert{opacity:1;}
+
+  .drop{
+    opacity:0;
+  }
+  .man.watering .drop{
+    animation:dropfall 0.9s ease-in forwards;
+  }
+  .man.watering .drop:nth-child(2){animation-delay:0.15s;}
+  .man.watering .drop:nth-child(3){animation-delay:0.3s;}
+  @keyframes dropfall{
+    0%{ opacity:0; transform:translateY(0); }
+    15%{ opacity:1; }
+    100%{ opacity:0; transform:translateY(38px); }
+  }
+
+  .granule{ opacity:0; }
+  .man.fertilizing .granule{
+    animation:granulefall 1s ease-in forwards;
+  }
+  .man.fertilizing .granule:nth-child(2){animation-delay:0.12s;}
+  .man.fertilizing .granule:nth-child(3){animation-delay:0.26s;}
+  .man.fertilizing .granule:nth-child(4){animation-delay:0.4s;}
+  @keyframes granulefall{
+    0%{ opacity:0; transform:translate(0,0); }
+    20%{ opacity:1; }
+    100%{ opacity:0; transform:translate(-4px,34px); }
+  }
+
+  .plant-pulse{
+    transform-box:fill-box;
+    transform-origin:50% 100%;
+  }
+  .plant-pulse.play{
+    animation:pulse 0.5s ease-out;
+  }
+  @keyframes pulse{
+    0%{ transform:scale(1); }
+    40%{ transform:scale(1.05); }
+    100%{ transform:scale(1); }
+  }
+
+  .bubble{
+    position:absolute;
+    top:34px;
+    right:18px;
+    max-width:220px;
+    background:var(--card);
+    color:var(--ink);
+    padding:10px 14px;
+    border-radius:14px;
+    font-size:0.85rem;
+    font-weight:500;
+    line-height:1.35;
+    box-shadow:0 12px 24px -10px rgba(0,0,0,0.4);
+    opacity:0;
+    transform:translateY(-6px) scale(0.96);
+    transition:opacity 0.3s ease, transform 0.3s ease;
+    pointer-events:none;
+  }
+  .bubble::after{
+    content:"";
+    position:absolute;
+    bottom:-7px;
+    right:26px;
+    width:14px;
+    height:14px;
+    background:var(--card);
+    transform:rotate(45deg);
+    border-radius:2px;
+  }
+  .bubble.correct{ border-left:4px solid var(--gold); }
+  .bubble.incorrect{ border-left:4px solid var(--rose); }
+  .bubble.show{
+    opacity:1;
+    transform:translateY(0) scale(1);
+  }
+
+  /* ---------- QUESTION PANEL ---------- */
+  .question-panel{
+    flex:1;
+    padding:28px 30px 26px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:16px;
+  }
+
+  .q-eyebrow{
+    font-size:0.75rem;
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+    color:var(--leaf-1);
+    font-weight:600;
+  }
+  .q-text{
+    font-family:'Fraunces', serif;
+    font-size:1.28rem;
+    line-height:1.5;
+    color:var(--ink);
+  }
+  .q-text .blank-mark{
+    display:inline-block;
+    min-width:34px;
+    border-bottom:2px solid var(--clay);
+    margin:0 2px;
+  }
+
+  .answer-row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .answer-input{
+    flex:1;
+    min-width:180px;
+    padding:12px 14px;
+    border-radius:12px;
+    border:1.5px solid var(--card-border);
+    background:#fff;
+    font-family:'Work Sans', sans-serif;
+    font-size:1rem;
+    color:var(--ink);
+    outline:none;
+    transition:border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .answer-input:focus{
+    border-color:var(--leaf-2);
+    box-shadow:0 0 0 3px rgba(84,143,88,0.18);
+  }
+  .answer-input:disabled{ opacity:0.6; }
+
+  .btn{
+    border:none;
+    border-radius:12px;
+    padding:12px 22px;
+    font-family:'Work Sans', sans-serif;
+    font-weight:600;
+    font-size:0.95rem;
+    cursor:pointer;
+    transition:transform 0.15s ease, background 0.2s ease, opacity 0.2s ease;
+  }
+  .btn:active{ transform:scale(0.97); }
+  .btn-primary{
+    background:var(--panel-forest);
+    color:#F1ECDC;
+  }
+  .btn-primary:hover{ background:#24493A; }
+  .btn-primary:disabled{
+    opacity:0.5;
+    cursor:not-allowed;
+  }
+  .btn-ghost{
+    background:transparent;
+    color:var(--panel-forest);
+    border:1.5px solid var(--card-border);
+  }
+  .btn-ghost:hover{ background:#F1ECDC; }
+
+  .feedback-line{
+    min-height:20px;
+    font-size:0.88rem;
+    font-weight:500;
+  }
+  .feedback-line.correct{ color:#3F7A4C; }
+  .feedback-line.incorrect{ color:var(--rose); }
+
+  .explanation{
+    font-size:0.82rem;
+    color:var(--ink-soft);
+    line-height:1.5;
+    background:#F1ECDC;
+    border-radius:10px;
+    padding:10px 12px;
+    display:none;
+  }
+  .explanation.show{ display:block; }
+
+  .hint-row{
+    font-size:0.78rem;
+    color:var(--ink-soft);
+  }
+
+  /* ---------- FINAL SCREEN ---------- */
+  .final-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(20,32,24,0.55);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:50;
+  }
+  .final-overlay.show{ display:flex; }
+  .final-card{
+    background:var(--card);
+    border-radius:22px;
+    padding:34px 32px;
+    max-width:420px;
+    width:100%;
+    text-align:center;
+    box-shadow:0 40px 80px -30px rgba(0,0,0,0.5);
+  }
+  .final-card h2{
+    font-size:1.6rem;
+    color:var(--panel-forest);
+    margin-bottom:8px;
+  }
+  .final-card p{
+    color:var(--ink-soft);
+    font-size:0.95rem;
+    margin:0 0 18px;
+  }
+  .final-score{
+    font-family:'Fraunces', serif;
+    font-size:2.2rem;
+    color:var(--gold);
+    font-weight:600;
+    margin-bottom:18px;
+  }
+
+  @media (max-width:480px){
+    .topbar{padding:18px 18px 12px;}
+    .question-panel{padding:22px 18px 22px;}
+    .q-text{font-size:1.1rem;}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="topbar">
+    <div>
+      <div class="title">Grow Your Ficus 🌿</div>
+      <div class="subtitle">Answer each grammar question correctly to help the Ficus Lyrata grow.</div>
+    </div>
+    <div class="progress-wrap">
+      <span class="progress-label" id="progressLabel">Question 1 / 10</span>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="scene-panel">
+      <div class="score-chip" id="scoreChip">Score: 0 / 10</div>
+      <div class="bubble" id="bubble"></div>
+
+      <svg class="stage-svg" viewBox="0 0 400 380" xmlns="http://www.w3.org/2000/svg" id="stageSvg">
+        <rect class="ground" x="0" y="330" width="400" height="50"></rect>
+
+        <!-- plant group -->
+        <g class="plant-pulse" id="plantPulse">
+          <!-- pot -->
+          <path class="pot-shadow" d="M120,335 q40,14 100,0 l0,4 q-40,14 -100,0 z"></path>
+          <path class="pot-body" d="M128,290 L212,290 L204,335 Q170,346 136,335 Z"></path>
+          <path class="pot-rim" d="M122,284 h96 q4,0 4,6 v4 q0,6 -4,6 h-96 q-4,0 -4,-6 v-4 q0,-6 4,-6 z"></path>
+
+          <!-- stem -->
+          <rect class="stem" id="stem" x="166" y="290" width="8" height="0" rx="4"></rect>
+
+          <!-- leaves (10 fixed slots, revealed progressively) -->
+          <g id="leavesGroup"></g>
+        </g>
+
+        <rect class="reset-flash" id="resetFlash" x="0" y="0" width="400" height="380"></rect>
+
+        <!-- character -->
+        <g class="man" id="manGroup" transform="translate(250,150)">
+          <!-- legs -->
+          <rect x="-14" y="150" width="10" height="50" rx="4" fill="#3B3327"></rect>
+          <rect x="6" y="150" width="10" height="50" rx="4" fill="#3B3327"></rect>
+          <!-- torso -->
+          <path d="M-24,90 q24,-16 48,0 l6,64 q-30,14 -60,0 z" fill="#C2734B"></path>
+          <!-- left arm -->
+          <rect x="-30" y="96" width="12" height="46" rx="6" fill="#C2734B"></rect>
+          <!-- right arm (animated) -->
+          <g class="man-arm-right">
+            <rect x="20" y="96" width="12" height="46" rx="6" fill="#C2734B"></rect>
+            <!-- watering can -->
+            <g class="tool-water" transform="translate(24,128)">
+              <rect x="0" y="0" width="22" height="14" rx="3" fill="#4E6B57"></rect>
+              <rect x="20" y="-4" width="16" height="6" rx="3" fill="#4E6B57" transform="rotate(-18 20 -4)"></rect>
+              <circle class="drop" cx="40" cy="6" r="2.4" fill="#9FD3E8"></circle>
+              <circle class="drop" cx="44" cy="10" r="2.4" fill="#9FD3E8"></circle>
+              <circle class="drop" cx="38" cy="14" r="2.4" fill="#9FD3E8"></circle>
+            </g>
+            <!-- fertilizer jar -->
+            <g class="tool-fert" transform="translate(24,124)">
+              <rect x="0" y="0" width="14" height="18" rx="3" fill="#8C4A2C"></rect>
+              <rect x="3" y="-5" width="8" height="6" rx="2" fill="#6B3A22"></rect>
+              <circle class="granule" cx="20" cy="10" r="2" fill="#D9A441"></circle>
+              <circle class="granule" cx="24" cy="16" r="2" fill="#D9A441"></circle>
+              <circle class="granule" cx="18" cy="20" r="2" fill="#D9A441"></circle>
+              <circle class="granule" cx="26" cy="8" r="2" fill="#D9A441"></circle>
+            </g>
+          </g>
+          <!-- head -->
+          <circle cx="0" cy="60" r="26" fill="#E7B58C"></circle>
+          <!-- beard -->
+          <path d="M-22,66 q22,26 44,0 q2,16 -22,20 q-24,-4 -22,-20 z" fill="#151210"></path>
+          <!-- hair -->
+          <path d="M-27,52 q0,-30 27,-30 q27,0 27,30 q-10,-14 -27,-10 q-17,-4 -27,10 z" fill="#151210"></path>
+          <!-- eyes -->
+          <circle cx="-9" cy="56" r="2.4" fill="#26231C"></circle>
+          <circle cx="9" cy="56" r="2.4" fill="#26231C"></circle>
+          <!-- smile -->
+          <path d="M-8,66 q8,7 16,0" stroke="#26231C" stroke-width="2" fill="none" stroke-linecap="round"></path>
+        </g>
+      </svg>
+    </div>
+
+    <div class="question-panel">
+      <div class="q-eyebrow" id="grammarTarget">Grammar focus</div>
+      <div class="q-text" id="questionText">Loading question…</div>
+      <div class="answer-row">
+        <input type="text" class="answer-input" id="answerInput" placeholder="Type your answer…" autocomplete="off">
+        <button class="btn btn-primary" id="submitBtn">Check</button>
+      </div>
+      <div class="feedback-line" id="feedbackLine"></div>
+      <div class="explanation" id="explanation"></div>
+      <div class="hint-row">Tip: capitalisation and extra spaces don't matter.</div>
+    </div>
+  </div>
+</div>
+
+<div class="final-overlay" id="finalOverlay">
+  <div class="final-card">
+    <h2>You did it! Your Ficus is thriving! 🌿</h2>
+    <p>You completed all 10 grammar questions.</p>
+    <div class="final-score" id="finalScore">0 / 10 correct</div>
+    <button class="btn btn-primary" id="restartBtn">Restart activity</button>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   QUESTION DATA — replace / add / remove questions freely.
+   Each blank in the sentence corresponds to one item in
+   "answers" (in order). An item can be:
+     - a single string, e.g. "was"
+     - an array of acceptable alternatives, e.g. ["has lived","'s lived"]
+   The blanks are joined with a single space to form the
+   full accepted answer, which is compared to what the
+   student types (case-insensitive, spacing-normalised).
+   ========================================================= */
+const QUESTIONS = [
+  {
+    question: "When I arrived at the office, my colleague ___ already ___ the report. (finish)",
+    answers: ["had", ["finished", "completed"]],
+    target: "Past Perfect",
+    explanation: "We use the Past Perfect (had + past participle) for an action completed before another past action."
+  },
+  {
+    question: "She ___ (live) in Berlin for over a decade — she moved there in 2014.",
+    answers: [["has lived", "'s lived"]],
+    target: "Present Perfect",
+    explanation: "Present Perfect describes an action that started in the past and continues into the present."
+  },
+  {
+    question: "If I ___ (know) about the meeting earlier, I would have prepared some notes.",
+    answers: [["had known", "'d known"]],
+    target: "Third Conditional",
+    explanation: "The third conditional uses had + past participle in the if-clause to talk about an unreal past."
+  },
+  {
+    question: "The bridge ___ (build) in 1932 and is still in use today.",
+    answers: [["was built"]],
+    target: "Passive Voice",
+    explanation: "Past Simple passive: was/were + past participle, used when the focus is on the action, not who did it."
+  },
+  {
+    question: "By the time you arrive, we ___ (finish) dinner.",
+    answers: [["will have finished", "'ll have finished"]],
+    target: "Future Perfect",
+    explanation: "Future Perfect describes an action that will be completed before a specific point in the future."
+  },
+  {
+    question: "I wish I ___ (study) harder for the exam last week.",
+    answers: [["had studied"]],
+    target: "Wish + Past Perfect",
+    explanation: "Wish + past perfect expresses regret about something in the past."
+  },
+  {
+    question: "He suggested that she ___ (arrive) earlier next time.",
+    answers: [["arrive"]],
+    target: "Subjunctive",
+    explanation: "After 'suggest that', English uses the base form of the verb (the subjunctive), without -s or -ed."
+  },
+  {
+    question: "This report ___ (proofread) before it is sent to the client.",
+    answers: [["needs to be proofread", "must be proofread", "should be proofread"]],
+    target: "Passive Infinitive",
+    explanation: "A passive infinitive (need/must/should + be + past participle) expresses necessity done to something."
+  },
+  {
+    question: "Not only ___ the flight delayed, but our luggage was also lost. (be)",
+    answers: [["was"]],
+    target: "Inversion",
+    explanation: "After a negative adverbial like 'Not only', the auxiliary verb moves before the subject."
+  },
+  {
+    question: "By next year, she ___ (work) at the company for two decades.",
+    answers: [["will have been working", "'ll have been working"]],
+    target: "Future Perfect Continuous",
+    explanation: "Future Perfect Continuous stresses the duration of an action up to a point in the future."
+  }
+];
+
+const CORRECT_MESSAGES = ["Nice!", "Correct!", "Great job!", "Look! It's growing!", "Your Ficus is happy!"];
+const WATER_FAIL_MESSAGES = [
+  "Oops! You overwatered your Ficus!",
+  "Careful! That's way too much water!",
+  "Oops! Your Ficus has had enough water!"
+];
+const FERT_FAIL_MESSAGES = [
+  "Oops! That's too much fertilizer!",
+  "Easy with the fertilizer!",
+  "Oops! Your Ficus got a little too much fertilizer!"
+];
+
+/* ---------------- Leaf geometry: 10 fixed slots ---------------- */
+/* Each leaf sits at a point along the stem, alternating sides,
+   growing slightly larger as the plant matures. */
+const LEAF_SLOTS = [
+  { x: 170, y: 282, side: -1, scale: 0.55, rot: -18 },
+  { x: 178, y: 262, side: 1,  scale: 0.62, rot: 16 },
+  { x: 164, y: 240, side: -1, scale: 0.68, rot: -22 },
+  { x: 182, y: 218, side: 1,  scale: 0.74, rot: 20 },
+  { x: 160, y: 196, side: -1, scale: 0.8,  rot: -20 },
+  { x: 186, y: 176, side: 1,  scale: 0.86, rot: 18 },
+  { x: 156, y: 156, side: -1, scale: 0.92, rot: -22 },
+  { x: 190, y: 138, side: 1,  scale: 0.98, rot: 20 },
+  { x: 168, y: 122, side: -1, scale: 1.04, rot: -12 },
+  { x: 176, y: 108, side: 1,  scale: 1.1,  rot: 10 }
+];
+const LEAF_COLORS = ["#3F7A4C", "#4A8850", "#548F58", "#5C9A5F", "#63A362", "#6BAA64", "#72B266", "#78AC66", "#7FB56A", "#86BC6E"];
+
+function leafPathD(){
+  // stylised violin/fiddle-leaf shape with a subtle waist
+  return "M0,0 C-15,-7 -21,-19 -17,-30 C-15,-35 -8,-36 -6,-31 C-4,-35 4,-35 6,-31 C8,-36 15,-35 17,-30 C21,-19 15,-7 0,0 Z";
+}
+
+const svgNS = "http://www.w3.org/2000/svg";
+const leavesGroup = document.getElementById("leavesGroup");
+const leafEls = [];
+
+LEAF_SLOTS.forEach((slot, i) => {
+  // IMPORTANT: CSS `transform` on an element completely overrides any SVG
+  // `transform` attribute on that SAME element. To animate growth/fall with
+  // CSS while still positioning each leaf at its slot with SVG attributes,
+  // positioning and animation live on separate, nested <g> elements.
+
+  // 1) outer group: fixed position + rotation for this slot (SVG attribute, CSS never touches it)
+  const posG = document.createElementNS(svgNS, "g");
+  posG.setAttribute("transform", `translate(${slot.x},${slot.y}) rotate(${slot.side * slot.rot})`);
+
+  // 2) mirror group: fixed left/right flip (SVG attribute, CSS never touches it)
+  const mirrorG = document.createElementNS(svgNS, "g");
+  mirrorG.setAttribute("transform", `scale(${slot.side * -1},1)`);
+
+  // 3) animated group: CSS controls scale/opacity for grow-in and fall-off
+  const animG = document.createElementNS(svgNS, "g");
+  animG.setAttribute("class", "leaf");
+  animG.style.animationDelay = (i * 0.15) + "s";
+
+  const shapeG = document.createElementNS(svgNS, "g");
+  shapeG.setAttribute("transform", `scale(${slot.scale})`);
+
+  const path = document.createElementNS(svgNS, "path");
+  path.setAttribute("d", leafPathD());
+  path.setAttribute("fill", LEAF_COLORS[i]);
+  shapeG.appendChild(path);
+
+  const vein = document.createElementNS(svgNS, "path");
+  vein.setAttribute("class", "leaf-vein");
+  vein.setAttribute("d", "M0,0 C-2,-10 -2,-20 0,-30");
+  shapeG.appendChild(vein);
+
+  animG.appendChild(shapeG);
+  mirrorG.appendChild(animG);
+  posG.appendChild(mirrorG);
+  leavesGroup.appendChild(posG);
+  leafEls.push(animG);
+});
+
+/* ---------------- State ---------------- */
+const state = {
+  currentIndex: 0,
+  score: 0,
+  plantLevel: 0,      // 0-10, drives stem height + leaf count
+  answered: false
+};
+
+const els = {
+  questionText: document.getElementById("questionText"),
+  grammarTarget: document.getElementById("grammarTarget"),
+  answerInput: document.getElementById("answerInput"),
+  submitBtn: document.getElementById("submitBtn"),
+  feedbackLine: document.getElementById("feedbackLine"),
+  explanation: document.getElementById("explanation"),
+  progressLabel: document.getElementById("progressLabel"),
+  progressFill: document.getElementById("progressFill"),
+  scoreChip: document.getElementById("scoreChip"),
+  bubble: document.getElementById("bubble"),
+  stem: document.getElementById("stem"),
+  manGroup: document.getElementById("manGroup"),
+  plantPulse: document.getElementById("plantPulse"),
+  resetFlash: document.getElementById("resetFlash"),
+  finalOverlay: document.getElementById("finalOverlay"),
+  finalScore: document.getElementById("finalScore"),
+  restartBtn: document.getElementById("restartBtn")
+};
+
+/* ---------------- Answer checking ---------------- */
+function normalize(str){
+  return str.toLowerCase().trim().replace(/\s+/g, " ");
+}
+
+function buildVariants(answerParts){
+  // cartesian product of per-blank alternatives, joined with a single space
+  let variants = [""];
+  answerParts.forEach(part => {
+    const options = Array.isArray(part) ? part : [part];
+    const next = [];
+    variants.forEach(prefix => {
+      options.forEach(opt => {
+        next.push((prefix + " " + opt).trim());
+      });
+    });
+    variants = next;
+  });
+  return variants.map(normalize);
+}
+
+function isCorrect(question, userInput){
+  const variants = buildVariants(question.answers);
+  return variants.includes(normalize(userInput));
+}
+
+/* ---------------- Rendering ---------------- */
+function renderQuestion(){
+  const q = QUESTIONS[state.currentIndex];
+  els.grammarTarget.textContent = q.target ? q.target : "Grammar focus";
+  els.questionText.textContent = q.question;
+  els.answerInput.value = "";
+  els.answerInput.disabled = false;
+  els.submitBtn.disabled = false;
+  els.feedbackLine.textContent = "";
+  els.feedbackLine.className = "feedback-line";
+  els.explanation.classList.remove("show");
+  els.explanation.textContent = "";
+  state.answered = false;
+  els.answerInput.focus();
+
+  els.progressLabel.textContent = `Question ${state.currentIndex + 1} / ${QUESTIONS.length}`;
+  els.progressFill.style.width = ((state.currentIndex) / QUESTIONS.length * 100) + "%";
+  els.scoreChip.textContent = `Score: ${state.score} / ${QUESTIONS.length}`;
+}
+
+function renderPlant(level){
+  // stem height grows with level
+  const baseY = 290;
+  const stemHeight = level === 0 ? 0 : 18 + level * 17;
+  els.stem.setAttribute("y", baseY - stemHeight);
+  els.stem.setAttribute("height", stemHeight);
+
+  leafEls.forEach((leaf, i) => {
+    if (i < level){
+      leaf.classList.add("visible");
+    } else {
+      leaf.classList.remove("visible");
+    }
+  });
+}
+
+function pulsePlant(){
+  els.plantPulse.classList.remove("play");
+  void els.plantPulse.offsetWidth; // restart animation
+  els.plantPulse.classList.add("play");
+}
+
+function flashReset(){
+  els.resetFlash.classList.remove("play");
+  void els.resetFlash.offsetWidth;
+  els.resetFlash.classList.add("play");
+}
+
+function dropOneLeaf(){
+  // animate the currently-topmost visible leaf falling off
+  for (let i = leafEls.length - 1; i >= 0; i--){
+    if (leafEls[i].classList.contains("visible")){
+      const leaf = leafEls[i];
+      leaf.classList.add("falling");
+      const handleEnd = () => {
+        leaf.classList.remove("visible", "falling");
+        leaf.removeEventListener("animationend", handleEnd);
+      };
+      leaf.addEventListener("animationend", handleEnd);
+      return true;
+    }
+  }
+  return false;
+}
+
+function showBubble(message, type){
+  els.bubble.textContent = message;
+  els.bubble.className = "bubble " + type;
+  requestAnimationFrame(() => els.bubble.classList.add("show"));
+  clearTimeout(showBubble._t);
+  showBubble._t = setTimeout(() => {
+    els.bubble.classList.remove("show");
+  }, 2000);
+}
+
+function performGardeningAction(wasCorrect){
+  const action = Math.random() < 0.5 ? "watering" : "fertilizing";
+  els.manGroup.classList.remove("watering", "fertilizing");
+  void els.manGroup.offsetWidth;
+  els.manGroup.classList.add(action);
+
+  setTimeout(() => {
+    els.manGroup.classList.remove("watering", "fertilizing");
+  }, 1300);
+
+  if (!wasCorrect){
+    const pool = action === "watering" ? WATER_FAIL_MESSAGES : FERT_FAIL_MESSAGES;
+    const msg = pool[Math.floor(Math.random() * pool.length)];
+    setTimeout(() => showBubble(msg, "incorrect"), 250);
+  } else {
+    const msg = CORRECT_MESSAGES[Math.floor(Math.random() * CORRECT_MESSAGES.length)];
+    setTimeout(() => showBubble(msg, "correct"), 250);
+  }
+}
+
+/* ---------------- Main flow ---------------- */
+function handleSubmit(){
+  if (state.answered) return;
+  const q = QUESTIONS[state.currentIndex];
+  const userInput = els.answerInput.value;
+  if (userInput.trim() === "") return;
+
+  state.answered = true;
+  els.answerInput.disabled = true;
+  els.submitBtn.disabled = true;
+
+  const correct = isCorrect(q, userInput);
+
+  if (correct){
+    state.score++;
+    state.plantLevel = Math.min(10, state.plantLevel + 1);
+    renderPlant(state.plantLevel);
+    pulsePlant();
+    els.feedbackLine.textContent = "Correct!";
+    els.feedbackLine.classList.add("correct");
+  } else {
+    if (state.plantLevel === 0){
+      // already empty — this is the explicit "reset" moment
+      flashReset();
+    } else {
+      state.plantLevel = Math.max(0, state.plantLevel - 1);
+      dropOneLeaf();
+      renderPlant(state.plantLevel);
+    }
+    els.feedbackLine.textContent = "Not quite — correct answer: \"" + buildVariants(q.answers)[0] + "\"";
+    els.feedbackLine.classList.add("incorrect");
+    if (q.explanation){
+      els.explanation.textContent = q.explanation;
+      els.explanation.classList.add("show");
+    }
+  }
+
+  performGardeningAction(correct);
+
+  els.scoreChip.textContent = `Score: ${state.score} / ${QUESTIONS.length}`;
+
+  setTimeout(() => {
+    goToNext();
+  }, correct ? 1400 : 2600);
+}
+
+function goToNext(){
+  state.currentIndex++;
+  if (state.currentIndex >= QUESTIONS.length){
+    finishActivity();
+  } else {
+    renderQuestion();
+  }
+}
+
+function finishActivity(){
+  els.progressLabel.textContent = `Question ${QUESTIONS.length} / ${QUESTIONS.length}`;
+  els.progressFill.style.width = "100%";
+  renderPlant(10); // reward: show a fully grown, thriving Ficus
+  els.finalScore.textContent = `${state.score} / ${QUESTIONS.length} correct`;
+  els.finalOverlay.classList.add("show");
+}
+
+function restartActivity(){
+  state.currentIndex = 0;
+  state.score = 0;
+  state.plantLevel = 0;
+  renderPlant(0);
+  els.finalOverlay.classList.remove("show");
+  renderQuestion();
+}
+
+/* ---------------- Events ---------------- */
+els.submitBtn.addEventListener("click", handleSubmit);
+els.answerInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") handleSubmit();
+});
+els.restartBtn.addEventListener("click", restartActivity);
+
+/* ---------------- Init ---------------- */
+renderPlant(0);
+renderQuestion();
+</script>
+</body>
+</html>
